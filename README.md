@@ -9,7 +9,7 @@ python-- version
 
 Then make sure you have downloaded all the libraries needed
 ```
-pip install -r requirements.txt
+pip install -r requirement.txt
 ```
 
 In line 10 in the train code
