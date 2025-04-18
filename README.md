@@ -1,3 +1,4 @@
+# NAIC-EARENDEL
 Yolov8 and CNN Dual Verification AI Model for Local Dessert in Malaysia
 ## Authors
 - [@Papermint155](https://github.com/Papermint155)
