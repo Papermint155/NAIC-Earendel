@@ -111,6 +111,11 @@ just install the test.txt and download the model in drive(both)
  pip install -r test.txt
 ```
 ___else___
+install the requirement.txt 
+```bash
+ pip install -r requirement.txt
+```
+or 
 ```bash
   git clone https://github.com/Papermint155/NAIC-Earendel
 ```
