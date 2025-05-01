@@ -108,7 +108,7 @@ Clone the project
 if only need to use prepared model 
 just install the test.txt and download the model in drive(both)
 ```bash
- pip install -r tset.txt
+ pip install -r test.txt
 ```
 ___else___
 ```bash
