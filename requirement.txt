@@ -23,7 +23,7 @@ grpcio==1.71.0
 h5py==3.13.0
 idna==3.10
 Jinja2==3.1.4
-joblib=1.4.2
+joblib==1.4.2
 keras==2.10.0
 Keras-Preprocessing==1.1.2
 kiwisolver==1.4.8
@@ -41,11 +41,10 @@ opt_einsum==3.4.0
 packaging==24.2
 pandas==2.2.3
 pillow==11.2.1
-pip==25.0.1
 protobuf==3.19.6
 psutil==7.0.0
 py-cpuinfo==9.0.0
-pyasn==10.6.1
+pyasn1==0.6.1
 pyasn1_modules==0.4.2
 pydantic==2.11.3
 pydantic_core==2.33.1
@@ -74,9 +73,9 @@ tensorflow-io-gcs-filesystem==0.31.0
 termcolor==3.0.1
 thop==0.1.1.post2209072238
 threadpoolctl==3.6.0
-torch==2.6.0+cu118
-torchaudio==2.6.0+cu118
-torchvision==0.21.0+cu118
+torch==2.6.0
+torchaudio==2.6.0
+torchvision==0.21.0
 tqdm==4.66.5
 typing_extensions==4.12.2
 typing-inspection==0.4.0
