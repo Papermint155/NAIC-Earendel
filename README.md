@@ -115,6 +115,16 @@ install the requirement.txt
 ```bash
  pip install -r requirement.txt
 ```
+after uninstall torch component
+```bash
+pip uninstall torch
+pip uninstall torchvision
+pip uninstall torchaudio
+```
+then
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
 or 
 ```bash
   git clone https://github.com/Papermint155/NAIC-Earendel
