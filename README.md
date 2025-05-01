@@ -13,6 +13,8 @@ Yolov8 and CNN Dual Verification AI Model for Local Dessert in Malaysia
  - [Explore Ultralytics YOLOv8](https://docs.ultralytics.com/models/yolov8/)
  - [Comprehensive Tutorials to Ultralytics YOLO](https://docs.ultralytics.com/guides/)
 
+## Python Version
+-[Python 3.10.11](https://www.python.org/downloads/release/python-31011/)
 
 ## Lib
 Library uses
@@ -103,7 +105,12 @@ wrapt                        1.17.2
 ## Run Locally
 
 Clone the project
-
+if only need to use prepared model 
+just install the test.txt and download the model in drive(both)
+```bash
+ pip install -r tset.txt
+```
+___else___
 ```bash
   git clone https://github.com/Papermint155/NAIC-Earendel
 ```
