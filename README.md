@@ -130,6 +130,17 @@ or
   git clone https://github.com/Papermint155/NAIC-Earendel
 ```
 
+## Obtaining dataset
+
+We are ~200 images per class scraped from Google Images.
+
+To obtain more images, run the [`dataset_setup.py`](./dataset_setup.py) script. You may change the query strings from line 16-25 and other parameters from line 28-29.
+
+```bash
+  py dataset_setup.py
+```
+
+Note: After this initial download, the dataset must be manually labeled. Please ask [@Papermint155](https://github.com/Papermint155) for more information.
 
 ## Training Model in Local
 
