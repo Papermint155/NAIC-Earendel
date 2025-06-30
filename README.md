@@ -19,7 +19,7 @@ Yolov8 and CNN Dual Verification AI Model for Local Dessert in Malaysia
 ## Lib
 Library uses
 
-###Don't worry it will install by the code in it
+__Don't worry it will install by the code in it__
 ```
 absl-py                      2.2.2
 astunparse                   1.6.3
@@ -105,29 +105,38 @@ wrapt                        1.17.2
 ## Run Locally
 
 Clone the project
-if only need to use prepared model 
-just install the test.txt and download the model in drive(both)
-```bash
- pip install -r test.txt
-```
-___else___
-install the requirement.txt 
+if only need to use prepared model of test model 
+just install the requirement.txt in ___Main___ and download the model in drive(both)
 ```bash
  pip install -r requirement.txt
 ```
-after uninstall torch component
+___else___
+Run setup.py
+```bash
+ py setup.py
+```
+It will auto-generated all file location in your specificed ___DIR___
+
+Second, download and run the requirement.txt in Earendal_Submission or 
+run main.py
+```
+pip install -r requirement.txt #Choice 1
+py main.py #Choice 2
+
+```
+Check lib
+```
+pip list
+```
+Then uninstall torch component to use ___CUDA___ lib for torch
 ```bash
 pip uninstall torch
 pip uninstall torchvision
 pip uninstall torchaudio
 ```
-then
+Then
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-or 
-```bash
-  git clone https://github.com/Papermint155/NAIC-Earendel
 ```
 
 ## Obtaining dataset
@@ -140,18 +149,29 @@ To obtain more images, run the [`dataset_setup.py`](./dataset_setup.py) script. 
   py dataset_setup.py
 ```
 
-Note: After this initial download, the dataset must be manually labeled. Please ask [@Papermint155](https://github.com/Papermint155) for more information.
+Note: After this initial download, the dataset must be manually labeled.
+Use file.py to help you for the renaming ang moving file 
+```
+py file.py
+```
+
+Please ask [@Papermint155](https://github.com/Papermint155) for more information.
 
 ## Training Model in Local
 
 To Train Your own AI Model locally, run the following command
 
 ```bash
-  py main.py # change the MAIN_DIR to your desire DIR in line 10
-  py yolov8-setup.py # change the MAIN_DIR to your desire DIR in line 8
-                      # change the DATASET_DEST to your dataset location in line 9
+   setup.py #change the MAIN_DIR to your desire DIR in line 8
+              # change the DATASET_DEST to your dataset location 9-11
+   cnn-train.py # change the DATASET_CNN to your desire DIR in line 20
+   yolo-11cls-train.py # change the MAIN_DIR to your desire DIR in line 14
+                        # change the DATASET_DEST to your dataset location 16
+   yolo11-train.py # change the DATASET_DEST to your dataset location 14
 ```
-Makesure your dataset_dir is look like this before run 
+
+
+Makesure your CNN dataset_dir is look like this before run 
 ```
 Datafile
 |--cookie
@@ -163,7 +183,7 @@ Datafile
 |-- ....
 ```
 If you make own database
-- Change the CLASSES array in the cnn_train.py, yolov8-setup.py and yolov8-prediction.py to your data classes same as the name in  ___Parent DIR___ 
+- Change the CLASSES array in the cnn-train.py, setup.py,yolo11-train.py, yolo-11cls-train.py and prediction.py to your data classes same as the name in  ___Parent DIR___ 
 
 __After run__, Delete all the text file in label in dessert_dataset_yolo in train, val and test dir 
 ```
@@ -188,17 +208,21 @@ Once done database
 
 Run the yolo train file 
 ```
-py yolov8-train.py
+py yolo11-train.py
+py yolo-11cls-train.py
 ```
+___RUN this seperatly. Dont run it together___
+
+
 Run the CNN model Train file
 ```
-py cnn_train.py
+py cnn-train.py
 ```
 After all done training, test the model with extra database
 
 Run
 ```
-py yolov8-prediction
+py prediction.py
 ```
 __Follow the instruction as shown in terminal__
 
@@ -207,9 +231,17 @@ If the data accuarry isn't ideal try to enlarge your database or make sure your 
 
 ## Modify
 
-You can modify the ratio of the overall prediction score by modify the coefficient in line 107 in ___yolov8-prediction.py___
+You can modify the ratio of the overall prediction score by modify the coefficient in line 135 in __prediction.py__
 ```
-coeff_cnn = 0.5
-coeff_yolo = 1 - coeff_cnn
-#change the 0.5 to higher value if you want the CNN model have higher priorty under determination of the answer
+    coeff_cls = 0.4
+    coeff_cnn = 0.3
+    coeff_yolo = 0.3
+```
+__OR__ 
+
+
+For detail result running prediction.py in __Earendal_Submission__ is good for you 
+You can modify the ratio of the overall prediction score by modify the coefficient in line 236 in __prediction.py__
+```   
+ coeffs = np.array([0.14, 0.32, 0.32, 0.22]) # coeff for cnn, yolo, yolocls
 ```
