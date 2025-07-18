@@ -90,6 +90,67 @@ class RealTimeDessertRecognizer:
         if not self.use_detection and not self.use_classification:
             raise ValueError("At least one model (detection or classification) must be enabled!")
     
+    def find_available_cameras(self):
+        """Find all available camera indices"""
+        available_cameras = []
+        
+        print("🔍 Scanning for available cameras...")
+        
+        # Test camera indices 0 to 5
+        for i in range(6):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    available_cameras.append(i)
+                    print(f"  📹 Camera {i}: Available")
+                else:
+                    print(f"  ❌ Camera {i}: Can't read frames")
+            else:
+                print(f"  ❌ Camera {i}: Not available")
+            cap.release()
+        
+        return available_cameras
+    
+    def initialize_camera(self, camera_index):
+        """Initialize camera with robust settings"""
+        print(f"🎥 Initializing camera {camera_index}...")
+        
+        # Try different backends
+        backends = [
+            cv2.CAP_DSHOW,    # DirectShow (Windows)
+            cv2.CAP_V4L2,     # Video4Linux2 (Linux)
+            cv2.CAP_AVFOUNDATION,  # AVFoundation (macOS)
+            cv2.CAP_ANY       # Any available backend
+        ]
+        
+        for backend in backends:
+            try:
+                cap = cv2.VideoCapture(camera_index, backend)
+                if cap.isOpened():
+                    # Test if we can read a frame
+                    ret, frame = cap.read()
+                    if ret and frame is not None:
+                        print(f"✅ Camera {camera_index} initialized successfully with backend {backend}")
+                        
+                        # Set camera properties
+                        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+                        cap.set(cv2.CAP_PROP_FPS, 30)
+                        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduce buffer size
+                        
+                        # Additional settings for external cameras
+                        cap.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+                        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+                        
+                        return cap
+                cap.release()
+            except Exception as e:
+                print(f"❌ Backend {backend} failed: {e}")
+                continue
+        
+        return None
+    
     def predict_with_yolo_detection(self, frame):
         """Predict using YOLO detection model"""
         if not self.use_detection or self.yolo_model is None:
@@ -280,38 +341,88 @@ class RealTimeDessertRecognizer:
             
             time.sleep(0.01)  # Small delay to prevent CPU overload
     
-    def run_webcam(self, camera_index=0):
+    def select_camera(self):
+        """Let user select camera from available options"""
+        available_cameras = self.find_available_cameras()
+        
+        if not available_cameras:
+            print("❌ No cameras found!")
+            return None
+        
+        if len(available_cameras) == 1:
+            print(f"✅ Using camera {available_cameras[0]}")
+            return available_cameras[0]
+        
+        print(f"\n📹 Available cameras: {available_cameras}")
+        print("Select a camera:")
+        
+        for i, cam_idx in enumerate(available_cameras):
+            print(f"  {i+1}. Camera {cam_idx}")
+        
+        while True:
+            try:
+                choice = input(f"\nEnter choice (1-{len(available_cameras)}): ").strip()
+                choice_idx = int(choice) - 1
+                
+                if 0 <= choice_idx < len(available_cameras):
+                    selected_camera = available_cameras[choice_idx]
+                    print(f"✅ Selected camera {selected_camera}")
+                    return selected_camera
+                else:
+                    print("❌ Invalid choice. Please try again.")
+            except (ValueError, KeyboardInterrupt):
+                print("\n⚠️ Operation cancelled")
+                return None
+    
+    def run_webcam(self, camera_index=None):
         """Run real-time webcam prediction"""
         print("🎥 Starting webcam...")
-        print("Press 'q' to quit, 's' to save screenshot")
+        print("Press 'q' to quit, 's' to save screenshot, 'r' to restart camera")
         
-        # Initialize webcam
-        cap = cv2.VideoCapture(camera_index)
+        # Select camera if not specified
+        if camera_index is None:
+            camera_index = self.select_camera()
+            if camera_index is None:
+                return
         
-        if not cap.isOpened():
-            print("❌ Error: Could not open webcam")
+        # Initialize camera with robust settings
+        cap = self.initialize_camera(camera_index)
+        
+        if cap is None:
+            print("❌ Error: Could not initialize any camera")
             return
-        
-        # Set webcam properties
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        cap.set(cv2.CAP_PROP_FPS, 30)
         
         # Start async processing thread
         processing_thread = threading.Thread(target=self.process_frame_async, daemon=True)
         processing_thread.start()
         
         screenshot_counter = 0
+        frame_count = 0
         
         try:
             while True:
                 ret, frame = cap.read()
-                if not ret:
-                    print("❌ Error: Could not read frame")
-                    break
                 
-                # Add frame to queue for processing
-                if len(self.frame_queue) < 2:  # Don't overwhelm the queue
+                if not ret or frame is None:
+                    print("❌ Error: Could not read frame")
+                    print("🔄 Trying to reinitialize camera...")
+                    
+                    cap.release()
+                    time.sleep(1)
+                    cap = self.initialize_camera(camera_index)
+                    
+                    if cap is None:
+                        print("❌ Failed to reinitialize camera")
+                        break
+                    continue
+                
+                frame_count += 1
+                
+                # Flip frame horizontally for mirror effect
+                frame = cv2.flip(frame, 1)
+                
+                # Add frame to queue for processing (skip some frames to reduce load)
+                if frame_count % 2 == 0 and len(self.frame_queue) < 2:
                     self.frame_queue.append(frame.copy())
                 
                 # Get current prediction results
@@ -345,6 +456,15 @@ class RealTimeDessertRecognizer:
                     cv2.imwrite(screenshot_filename, frame)
                     print(f"📸 Screenshot saved as {screenshot_filename}")
                     screenshot_counter += 1
+                elif key == ord('r'):
+                    # Restart camera
+                    print("🔄 Restarting camera...")
+                    cap.release()
+                    time.sleep(1)
+                    cap = self.initialize_camera(camera_index)
+                    if cap is None:
+                        print("❌ Failed to restart camera")
+                        break
                 
         except KeyboardInterrupt:
             print("\n⚠️ Interrupted by user")
@@ -398,7 +518,7 @@ def main():
             use_classification=use_classification
         )
         
-        # Start webcam
+        # Start webcam (will auto-detect cameras)
         recognizer.run_webcam()
         
     except FileNotFoundError as e:
